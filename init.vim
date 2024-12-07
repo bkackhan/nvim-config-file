@@ -98,7 +98,7 @@ set foldlevelstart=1
 
 " netrw and vim-vinegar
 let g:netrw_browse_split = 3
-
+" let g:coc_disable_startup_warning = 1
 " Plugins, syntax, and colors
 " ---------------------------------------------------------------------------
 " vim-plug
@@ -106,6 +106,7 @@ let g:netrw_browse_split = 3
 " Specify a directory for plugins
 " - For Neovim: ~/.local/share/nvim/plugged
 " - Avoid using standard Vim directory names like 'plugin'
+"*************** Plugins ********************
 call plug#begin('~/.local/share/nvim/plugged')
 
 " Make sure to use single quotes
@@ -141,7 +142,16 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 "identation
 Plug 'nathanaelkane/vim-indent-guides'
 
+"fuzzy file search
+Plug 'Yggdroot/LeaderF', { 'do': ':LeaderfInstallCExtension' }
 " Initialize plugin system
+
+" mejora el syntax highlight
+Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+
+" para los iconos
+Plug 'ryanoasis/vim-devicons'
+
 call plug#end()
 
 "para ver las identaciones
@@ -150,16 +160,56 @@ let g:indent_guides_guide_size = 1
 
 " recomendaciones el nvim. health
 let g:loaded_node_provider = 0
+"
+" ********** funciones ***********
+"
+" abre la busqueda fuzzy siempre en el folder con un .git
+function! OpenLeaderfInGitDir()
+    " Cambiar al directorio del repositorio git
+    let l:git_dir = system('git rev-parse --show-toplevel')
+    if v:shell_error
+        echo "No es un repositorio Git"
+        return
+    endif
+    " Eliminar el salto de línea al final
+    let l:git_dir = substitute(l:git_dir, '\n', '', 'g')
+    execute 'cd ' . l:git_dir
+    " Abrir Leaderf file
+    Leaderf file --popup
+endfunction
 
-nnoremap <C-b> :NERDTreeToggle<CR>
+" hace que nerdtree siempre abra en la raiz del proyecto
+function! OpenNERDTreeInGitDir()
+    " Cambiar al directorio del repositorio git
+    let l:git_dir = system('git rev-parse --show-toplevel')
+    if v:shell_error
+        echo "No es un repositorio Git"
+        return
+    endif
+    " Eliminar el salto de línea al final
+    let l:git_dir = substitute(l:git_dir, '\n', '', 'g')
+    execute 'cd ' . l:git_dir
+    " Abrir NERDTreeToggle
+    NERDTreeToggle
+endfunction
+
+" ********** atajos de teclas *************
+
+" busca una palbra hacia adelante
+nnoremap <C-f> :/
+" ctrl + p para abrir el Leaderf
+nnoremap <C-p> :call OpenLeaderfInGitDir()<CR>
+" abre el nerdtree
+nnoremap <C-b> :call OpenNERDTreeInGitDir()<CR>
 inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm()
                               \: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+"************* otras configuraciones ************
 syntax enable
 " Neovim only
 set termguicolors 
 
 " Light scheme
-colorscheme slate
+colorscheme sorbet
 
 " Dark scheme
 "colorscheme falcon
@@ -170,6 +220,8 @@ set colorcolumn=80
 
 " lightline config - add file 'absolutepath'
 " Delete colorscheme line below if using Dark scheme
+
+"*************** variables ***************
 
 let g:lightline = {
       \ 'colorscheme': 'PaperColor_light',
